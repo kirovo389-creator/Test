@@ -18,7 +18,6 @@ import android.provider.OpenableColumns
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.Surface
-import android.view.TextureView
 import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
@@ -64,9 +63,9 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
 
     private var player: ExoPlayer? = null
     private var vrPlayer: ExoPlayer? = null
-    private var mainTexture: TextureView? = null
-    private var vrTextureLeft: TextureView? = null
-    private var vrTextureRight: TextureView? = null
+    private var mainTexture: androidx.media3.ui.PlayerView? = null
+    private var vrTextureLeft: androidx.media3.ui.PlayerView? = null
+    private var vrTextureRight: androidx.media3.ui.PlayerView? = null
 
     private var theatreScreen: CurvedScreenFrame? = null
     private var vrRoot: FrameLayout? = null
@@ -311,7 +310,7 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
 
     private fun buildTheatre() {
         if (sourceUri == null) return
-        if (vrRoot != null) exitVr()
+        if (vrRoot != null) exitVr(rebuildTheatre = false)
         ensurePlayer()
         root.removeAllViews()
         root.setBackgroundColor(Color.rgb(5, 7, 12))
@@ -404,14 +403,13 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
     private fun sizeFactor(): Float = 0.62f + (sizeProgress / 100f) * 0.66f
     private fun distanceFactor(): Float = 1.08f - (distanceProgress / 100f) * 0.55f
 
-    private fun attachVideo(container: FrameLayout, exo: ExoPlayer): TextureView {
-        val texture = TextureView(this).apply {
-            setBackgroundColor(Color.BLACK)
-            isOpaque = true
-        }
-        container.addView(texture, FrameLayout.LayoutParams(-1, -1))
-        exo.setVideoTextureView(texture)
-        return texture
+    private fun attachVideo(container: FrameLayout, exo: ExoPlayer): androidx.media3.ui.PlayerView {
+        val view = layoutInflater.inflate(R.layout.video_surface, container, false) as androidx.media3.ui.PlayerView
+        view.player = exo
+        view.useController = false
+        view.setKeepContentOnPlayerReset(true)
+        container.addView(view, FrameLayout.LayoutParams(-1, -1))
+        return view
     }
 
     private fun togglePlayback() {
@@ -443,7 +441,7 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
 
     private fun enterVr() {
         val main = player ?: return
-        mainTexture?.let { main.clearVideoTextureView(it) }
+        mainTexture?.player = null
         vrPlayer?.release()
         vrPlayer = ExoPlayer.Builder(this).build().apply {
             setMediaItem(MediaItem.fromUri(sourceUri!!))
@@ -608,21 +606,25 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
         basePitch = null
     }
 
-    private fun exitVr() {
+    private fun exitVr(rebuildTheatre: Boolean = true) {
         if (vrRoot == null) return
         sensorManager.unregisterListener(this)
         mainHandler.removeCallbacks(syncVrVideo)
         try { cameraProvider?.unbindAll() } catch (_: Exception) { }
         cameraProvider = null
         cameraPreview = null
+        vrTextureLeft?.player = null
+        vrTextureRight?.player = null
         vrPlayer?.release()
         vrPlayer = null
         vrTextureLeft = null
         vrTextureRight = null
+        mainTexture?.player = null
+        mainTexture = null
         vrPair = null
         vrRoot = null
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-        buildTheatre()
+        if (rebuildTheatre) buildTheatre()
     }
 
     override fun onSensorChanged(event: android.hardware.SensorEvent?) {
@@ -671,7 +673,9 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
         vrPlayer = null
         player?.release()
         player = null
+        mainTexture?.player = null
         mainTexture = null
+        vrTextureLeft?.player = null
         vrTextureLeft = null
         vrTextureRight = null
     }
