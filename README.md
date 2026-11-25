@@ -1,12 +1,12 @@
 # VR Cinema
 
-Android cinema player with a curved theatre-style screen and a phone-camera background for a simple Cardboard-style VR viewer.
+Android cinema player with an aspect-correct curved theatre screen and a phone-camera background for a simple Cardboard-style VR viewer.
 
 ## Features
 
 - Pick a local video using Android's system file picker.
 - Receive a video shared from Telegram or another app using Android Share.
-- Play direct HTTP(S) media streams supported by Media3: MP4, WebM, HLS and DASH (depending on the server and codecs).
+- Play direct HTTP(S) media streams supported by Media3: MP4, WebM, HLS (.m3u8) and DASH (.mpd) (depending on the server and codecs).
 - Landscape theatre preview with a curved-edge screen.
 - Adjust screen size and apparent distance.
 - Side-by-side left/right eye view for a phone VR headset.
