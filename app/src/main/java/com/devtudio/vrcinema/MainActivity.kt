@@ -276,6 +276,10 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
     }
 
     private fun loadSource(uri: Uri, title: String) {
+        if (sourceUri != null && sourceUri != uri) {
+            if (vrRoot != null) exitVr(rebuildTheatre = false)
+            releasePlayers()
+        }
         sourceUri = uri
         sourceTitle = title.ifBlank { "Видео" }
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
@@ -350,11 +354,12 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        val playButton = actionButton(if (player?.isPlaying == true) "Пауза" else "▶ Воспроизвести", true) {
-            togglePlayback()
+        val playButton = actionButton("▶ Play в VR", true) {
+            player?.play()
+            requestVr()
         }
         buttons.addView(playButton, LinearLayout.LayoutParams(0, dp(46), 1f).apply { rightMargin = dp(8) })
-        buttons.addView(actionButton("VR-режим", true) { requestVr() },
+        buttons.addView(actionButton("Предпросмотр", false) { togglePlayback() },
             LinearLayout.LayoutParams(0, dp(46), 1f).apply { leftMargin = dp(8) })
         controls.addView(buttons)
 
