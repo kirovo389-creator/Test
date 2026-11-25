@@ -513,9 +513,10 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
             topMargin = dp(10)
         })
 
-        val play = actionButton(if (main.isPlaying) "Ⅱ Пауза" else "▶ Play", true) {
+        val play = actionButton(if (main.isPlaying) "Ⅱ Пауза" else "▶ Play", true) { togglePlayback() }
+        play.setOnClickListener {
             togglePlayback()
-            (it as? TextView)?.text = if (main.isPlaying) "Ⅱ Пауза" else "▶ Play"
+            play.text = if (main.isPlaying) "Ⅱ Пауза" else "▶ Play"
         }
         scene.addView(play, FrameLayout.LayoutParams(dp(150), dp(48), Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL).apply {
             bottomMargin = dp(18)
@@ -645,8 +646,8 @@ class MainActivity : AppCompatActivity(), android.hardware.SensorEventListener {
 
     private fun normalizeAngle(value: Float): Float {
         var result = value
-        while (result > Math.PI) result -= (2f * Math.PI.toFloat())
-        while (result < -Math.PI) result += (2f * Math.PI.toFloat())
+        while (result > Math.PI.toFloat()) result -= (2f * Math.PI.toFloat())
+        while (result < -Math.PI.toFloat()) result += (2f * Math.PI.toFloat())
         return result
     }
 
